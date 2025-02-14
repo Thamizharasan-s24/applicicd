@@ -3,7 +3,7 @@
 IMAGE_NAME="appli"
 
 # Run the Docker container in the background
-docker run -d -p 8080:80 --name mcontainer $IMAGE_NAME:latest
+docker run -d -p 8080:80 --name my-running-app $IMAGE_NAME:latest
 
 # Wait for the container to start
 sleep 2
@@ -20,5 +20,5 @@ else
 fi
 
 # Clean up the container
-docker stop mcontainer
-docker rm mcontainer
+docker stop my-running-app
+docker rm my-running-app

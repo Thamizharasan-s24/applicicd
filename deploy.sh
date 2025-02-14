@@ -2,7 +2,7 @@
 
 # Variables
 IMAGE_NAME="appli"       # The name of your Docker image
-CONTAINER_NAME="mncontainer"  # The name of the running container
+CONTAINER_NAME="my-running-app"  # The name of the running container
 
 # 1. SSH into EC2 instance (if you're running the deploy script locally)
 echo "Stopping and removing any existing container..."
