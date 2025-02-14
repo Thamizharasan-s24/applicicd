@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+
+# Trigger this workflow on push to the main branch
+on:
+  push:
+    branches:
+      - main  # This will trigger the workflow on pushes to the `main` branch
+
+jobs:
+  build-and-deploy:
+    # Runs the job on the latest Ubuntu environment
+    runs-on: nginx-latest
+
+    steps:
+    # Step 1: Checkout the code from the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Step 2: Set up Docker for building the container
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    # Step 3: Build the Docker image using the build.sh script
+    - name: Build Docker image
+      run: ./build.sh
+
+    # Step 4: Run tests to verify if the web server responds
+    - name: Run tests
+      run: ./test.sh
+
+    # Step 5: Deploy the app to the EC2 instance
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no -i "C:\Users\thami\Downloads\cicdfirst.pem" ec2-user@3.86.162.27 "cd ~/appli && ./deploy.sh"
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}
+
