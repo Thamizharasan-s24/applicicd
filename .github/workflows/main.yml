@@ -3,14 +3,14 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger pipeline when changes are pushed to the `main` branch
+      - main  # Trigger on push to the main branch
 
 jobs:
   build-and-deploy:
-    runs-on:ubuntu-latest  # GitHub runner environment
+    runs-on: nginx-latest  # GitHub-hosted runner (or use 'self-hosted' if you have your own runner)
 
     steps:
-    # Step 1: Checkout the code
+    # Step 1: Checkout code from GitHub repository
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -22,7 +22,7 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t appli .
-        docker tag appli:latest appli:$GITHUB_SHA
+        docker tag appli:latest appli:$GITHUB_SHA  # Tag with commit SHA for versioning
 
     # Step 4: Run tests on the Docker container (Optional)
     - name: Run tests
@@ -35,22 +35,20 @@ jobs:
     # Step 5: Deploy to EC2 using SSH
     - name: Deploy to EC2
       run: |
-        # Create SSH directory
-        mkdir -p ~/.ssh
-        # Save private SSH key from GitHub Secrets
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa  # Ensure correct file permissions for the key
+        mkdir -p ~/.ssh  # Create SSH directory
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # Save the private SSH key from GitHub Secrets
+        chmod 600 ~/.ssh/id_rsa  # Ensure correct file permissions for the SSH key
 
-        # Disable SSH host key checking (for automation)
+        # Disable strict host key checking (important for automation)
         echo "StrictHostKeyChecking=no" >> ~/.ssh/config
 
-        # SSH into EC2 and run deployment commands
+        # SSH into EC2 and deploy the Docker container
         ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
           # Stop and remove any old containers
           docker stop my-running-app || true
           docker rm my-running-app || true
 
-          # Run the new container with updated image
+          # Run the new container with the latest image
           docker run -d -p 80:80 --name my-running-app appli:latest
           echo "Deployment Successful"
         EOF
