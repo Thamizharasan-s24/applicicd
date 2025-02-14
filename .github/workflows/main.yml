@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: nginx-latest  # GitHub-hosted runner (or use 'self-hosted' if you have your own runner)
+    runs-on: self-hosted  # GitHub-hosted runner (or use 'self-hosted' if you have your own runner)
 
     steps:
     # Step 1: Checkout code from GitHub repository
