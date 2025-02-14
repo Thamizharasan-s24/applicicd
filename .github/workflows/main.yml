@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: nginx-latest  # GitHub runner environment
+    runs-on:[self-hosted, nginx-latest]  # GitHub runner environment
 
     steps:
     # Step 1: Checkout the code
