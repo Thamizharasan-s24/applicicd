@@ -1,11 +1,24 @@
 #!/bin/bash
 
-IMAGE_NAME="appli"
+# Variables
+IMAGE_NAME="appli"       # The name of your Docker image
+CONTAINER_NAME="my-run"  # The name of the running container
+EC2_HOST="3.86.162.27"  # EC2 Public IP (can be obtained from your AWS console)
 
-# Stop any existing container (if any)
-docker stop my-running-app 2>/dev/null  # Ignore error if no container exists
-docker rm my-running-app 2>/dev/null
+# 1. SSH into EC2 instance (if you're running the deploy script locally)
+echo "Stopping and removing any existing container..."
 
-docker run -d -p 80:80 --name my-running-app $IMAGE_NAME:latest
+# Stop and remove the existing container (if any)
+docker stop $CONTAINER_NAME 2>/dev/null
+docker rm $CONTAINER_NAME 2>/dev/null
 
-echo "Application deployed!"
+# 2. Run the new container with the latest image
+echo "Deploying the latest version of the app..."
+
+# Run the container in detached mode
+docker run -d -p 80:80 --name $CONTAINER_NAME $IMAGE_NAME:latest
+
+echo "Application deployed successfully to EC2!"
+
+# Optional: Check container status
+docker ps
