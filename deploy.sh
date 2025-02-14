@@ -2,7 +2,7 @@
 
 # Variables
 IMAGE_NAME="appli"       # The name of your Docker image
-CONTAINER_NAME="my-run"  # The name of the running container
+CONTAINER_NAME="mcontainer"  # The name of the running container
 EC2_HOST="3.86.162.27"  # EC2 Public IP (can be obtained from your AWS console)
 
 # 1. SSH into EC2 instance (if you're running the deploy script locally)
