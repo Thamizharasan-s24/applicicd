@@ -3,52 +3,36 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main  # Trigger the workflow on push to the 'main' branch
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted  # GitHub-hosted runner (or use 'self-hosted' if you have your own runner)
+    runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout code from GitHub repository
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Step 2: Set up Docker Buildx (Optional but recommended for better caching)
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    # Step 3: Build Docker image
-    - name: Build Docker image
-      run: |
-        docker build -t appli .
-        docker tag appli:latest appli:$GITHUB_SHA  # Tag with commit SHA for versioning
+      # Step 3: Build Docker image
+      - name: Build Docker image
+        run: |
+          ./build.sh
 
-    # Step 4: Run tests on the Docker container (Optional)
-    - name: Run tests
-      run: |
-        docker run -d -p 8089:80 appli
-        sleep 5  # Wait for the container to start
-        curl -f http://localhost:8089 || exit 1  # Check if the app is up
-        docker stop $(docker ps -q)
+      # Step 4: Run tests on Docker image
+      - name: Run tests
+        run: |
+          ./test.sh
 
-    # Step 5: Deploy to EC2 using SSH
-    - name: Deploy to EC2
-      run: |
-        mkdir -p ~/.ssh  # Create SSH directory
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # Save the private SSH key from GitHub Secrets
-        chmod 600 ~/.ssh/id_rsa  # Ensure correct file permissions for the SSH key
-
-        # Disable strict host key checking (important for automation)
-        echo "StrictHostKeyChecking=no" >> ~/.ssh/config
-
-        # SSH into EC2 and deploy the Docker container
-        ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
-          # Stop and remove any old containers
-          docker stop my-running-app || true
-          docker rm my-running-app || true
-
-          # Run the new container with the latest image
-          docker run -d -p 80:80 --name my-running-app appli:latest
-          echo "Deployment Successful"
-        EOF
+      # Step 5: Deploy to EC2
+      - name: Deploy to EC2
+        run: |
+          ./deploy.sh
+        env:
+          EC2_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          EC2_USER: ec2-user  # The default user for Amazon Linux 1
+          EC2_HOST: ${{ secrets.EC2_PUBLIC_IP }}

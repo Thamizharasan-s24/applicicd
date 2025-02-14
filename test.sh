@@ -3,14 +3,14 @@
 IMAGE_NAME="appli"
 
 # Run a container in the background
-docker run -d -p 8089:80 $IMAGE_NAME:latest &
+docker run -d -p 8080:80 $IMAGE_NAME:latest &
 CONTAINER_ID=$!
 
 # Give it a second to start
 sleep 1
 
 # Check if the server responds
-curl http://localhost:8089 > /dev/null 2>&1
+curl http://localhost:8080 > /dev/null 2>&1
 if [[ $? -eq 0 ]]; then
     echo "Test passed!"
 else
